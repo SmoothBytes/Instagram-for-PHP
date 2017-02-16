@@ -137,7 +137,7 @@ class Client {
      * @return mixed
      */
     public function searchUser($name, $limit = 20) {
-        return $this->_makeCall('users/search', false, array('q' => $name, 'count' => $limit));
+        return $this->_makeCall('users/search', true, array('q' => $name, 'count' => $limit));
     }
 
     /**
