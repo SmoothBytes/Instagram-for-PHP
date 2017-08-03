@@ -440,21 +440,35 @@ class Client {
 
         $apiCall = self::API_URL . $function . $authMethod . (('GET' === $method) ? $paramString : null);
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $apiCall);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json'));
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $count = 0;
+        $max_tries = 3;
+        do {
+          $ch = curl_init();
+          curl_setopt($ch, CURLOPT_URL, $apiCall);
+          curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json'));
+          curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+          curl_setopt($ch, CURLOPT_TIMEOUT, 90);
+          curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+          curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
-        if ('POST' === $method) {
-            curl_setopt($ch, CURLOPT_POST, count($params));
-            curl_setopt($ch, CURLOPT_POSTFIELDS, ltrim($paramString, '&'));
-        } else if ('DELETE' === $method) {
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+          if ('POST' === $method) {
+              curl_setopt($ch, CURLOPT_POST, count($params));
+              curl_setopt($ch, CURLOPT_POSTFIELDS, ltrim($paramString, '&'));
+          } else if ('DELETE' === $method) {
+              curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+          }
+          $jsonData = curl_exec($ch);
+
+          $count++;
+          if($count >= $max_tries) {
+              break;
+          }
+
+
         }
+        while(curl_errno($ch) == 28);
 
-        $jsonData = curl_exec($ch);
+
 
         if (false === $jsonData) {
             throw new CurlException('_makeCall() - cURL error: ' . curl_error($ch));
