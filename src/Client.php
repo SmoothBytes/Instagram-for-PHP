@@ -441,7 +441,7 @@ class Client {
         $apiCall = self::API_URL . $function . $authMethod . (('GET' === $method) ? $paramString : null);
 
         $count = 0;
-        $max_tries = 3;
+        $max_tries = 5;
         do {
           $ch = curl_init();
           curl_setopt($ch, CURLOPT_URL, $apiCall);
@@ -450,6 +450,7 @@ class Client {
           curl_setopt($ch, CURLOPT_TIMEOUT, 90);
           curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
           curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+          curl_setopt($ch, CURLOPT_HEADER, true);
 
           if ('POST' === $method) {
               curl_setopt($ch, CURLOPT_POST, count($params));
@@ -461,6 +462,7 @@ class Client {
 
           $count++;
           if($count >= $max_tries) {
+              $jsonData = false;
               break;
           }
 
